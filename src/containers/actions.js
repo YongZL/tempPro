@@ -39,15 +39,21 @@ export const fetchAndUpdateAppManifest = () => async (dispatch) => {
 };
 
 export const fetchAndUpdateLanguage = (i18n) => async (dispatch) => {
-  const { result } = await fetchLanguage();
-  console.log('resultresult', result);
+  try {
+    const res = await fetchLanguage();
+    console.log('resultresult', res);
 
-  if (result && result.language !== undefined) {
-    dispatch(updateLanguage(result.language));
-    i18n.changeLanguage(result.language);
-  } else {
-    dispatch(updateLanguage(ENGLISH));
-    i18n.changeLanguage(ENGLISH);
+    const { result } = await fetchLanguage();
+
+    if (result && result.language !== undefined) {
+      dispatch(updateLanguage(result.language));
+      i18n.changeLanguage(result.language);
+    } else {
+      dispatch(updateLanguage(ENGLISH));
+      i18n.changeLanguage(ENGLISH);
+    }
+  } catch (e) {
+    console.info('fetchAndUpdateLanguage', e);
   }
 };
 

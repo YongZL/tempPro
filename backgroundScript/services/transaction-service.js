@@ -25,10 +25,10 @@ import * as ChainApi from '../apis/chain';
 import { getCandyToken, getCSMToken } from './tokens-service';
 import { FAILURE } from '../../lib/constants/api';
 
-const extension = require('extensionizer');
+const extension = require('webextension-polyfill');
 
 //  update transaction State
-const updateTransaction = async transaction => {
+const updateTransaction = async (transaction) => {
   getStore().dispatch(transactionActions.fetchTransaction(transaction));
 };
 
@@ -49,22 +49,27 @@ export const getTxnError = () => ({
 
 export const isValidTxnAmount = (balance, totalAmount, network) => {
   if (
-    network.value === KUSAMA_NETWORK.value
-    || network.value === EDGEWARE_NETWORK.value
-    || network.value === BERESHEET_NETWORK.value
+    network.value === KUSAMA_NETWORK.value ||
+    network.value === EDGEWARE_NETWORK.value ||
+    network.value === BERESHEET_NETWORK.value
   ) {
-    return balance.gt(new BN(Transaction.KUSAMA_MINIMUM_BALANCE)) && balance.gte(totalAmount);
+    return (
+      balance.gt(new BN(Transaction.KUSAMA_MINIMUM_BALANCE)) &&
+      balance.gte(totalAmount)
+    );
   }
   if (network.value === WESTEND_NETWORK.value) {
-    return balance.gt(new BN(Transaction.MINIMUM_BALANCE)) && balance.gt(totalAmount);
+    return (
+      balance.gt(new BN(Transaction.MINIMUM_BALANCE)) && balance.gt(totalAmount)
+    );
   }
   return balance.gt(totalAmount);
 };
-export const mergeTransactions = async newTransaction => {
+export const mergeTransactions = async (newTransaction) => {
   const { transactionArr } = getStore().getState().transactionState;
   // remove Pending duplicate TXN and overide with new Status
   const pendingTransactionIndex = transactionArr.findIndex(
-    x => x.txnHash && x.txnHash === newTransaction.txnHash,
+    (x) => x.txnHash && x.txnHash === newTransaction.txnHash
   );
   if (pendingTransactionIndex > -1) {
     transactionArr.splice(pendingTransactionIndex, 1, newTransaction);
@@ -78,21 +83,29 @@ export const mergeTransactions = async newTransaction => {
 export const filterTransactions = async (transactions, network, address) => {
   let newTransactions = [];
   if (network !== undefined) {
-    newTransactions = transactions.filter(tx => tx.internal.network.value === network.value);
+    newTransactions = transactions.filter(
+      (tx) => tx.internal.network.value === network.value
+    );
   }
   if (address !== undefined) {
-    newTransactions = newTransactions.filter(tx => tx.internal.address === address);
+    newTransactions = newTransactions.filter(
+      (tx) => tx.internal.address === address
+    );
   }
   return newTransactions;
 };
 
-export const sendOSNotification = async transaction => {
+export const sendOSNotification = async (transaction) => {
   const { message } = createTransactionToastMessage(transaction);
   const txnDetailURl = `${transaction.internal.network.transactionUrl}/${transaction.txnHash}`;
   await Notification.createNotification('CRUST', message, txnDetailURl);
 };
 
-export const updateTransactionState = async (transaction, txnHash, txnStatus) => {
+export const updateTransactionState = async (
+  transaction,
+  txnHash,
+  txnStatus
+) => {
   const newTransaction = updateTransactionObj(transaction, txnHash, txnStatus);
   const newTransactionArr = await mergeTransactions(newTransaction);
   if (txnStatus === Transaction.PENDING) {
@@ -107,7 +120,7 @@ export const updateTransactionState = async (transaction, txnHash, txnStatus) =>
   await updateTransactionsState(newTransactionArr);
 };
 
-const createTransactionObj = transaction => {
+const createTransactionObj = (transaction) => {
   const {
     to,
     account,
@@ -120,13 +133,25 @@ const createTransactionObj = transaction => {
     tokenSelected,
   } = transaction;
 
-  const feeStr = convertBalanceToShow(fees.totalFee, ChainApi.getTokenDecimals(), ChainApi.getTokenDecimals())
-    + ChainApi.getTokenSymbol();
-  const amountStr = convertBalanceToShow(fAmount, tokenSelected.decimals, tokenSelected.decimals)
-    + tokenSelected.tokenSymbol;
+  const feeStr =
+    convertBalanceToShow(
+      fees.totalFee,
+      ChainApi.getTokenDecimals(),
+      ChainApi.getTokenDecimals()
+    ) + ChainApi.getTokenSymbol();
+  const amountStr =
+    convertBalanceToShow(
+      fAmount,
+      tokenSelected.decimals,
+      tokenSelected.decimals
+    ) + tokenSelected.tokenSymbol;
 
-  let total = convertBalanceToShow(totalAmount.toString(), tokenSelected.decimals, tokenSelected.decimals)
-    + tokenSelected.tokenSymbol;
+  let total =
+    convertBalanceToShow(
+      totalAmount.toString(),
+      tokenSelected.decimals,
+      tokenSelected.decimals
+    ) + tokenSelected.tokenSymbol;
   if (ChainApi.getTokenSymbol() !== tokenSelected.tokenSymbol) {
     total = `${amountStr} + ${feeStr}`;
   }
@@ -150,7 +175,7 @@ const createTransactionObj = transaction => {
   return newTransactionObject;
 };
 
-export const getBalanceWithThrow = async senderAddress => {
+export const getBalanceWithThrow = async (senderAddress) => {
   const balance = await getBalance(senderAddress);
   if (balance.status === FAILURE) {
     throw new Error('Failed to get balance.');
@@ -158,7 +183,7 @@ export const getBalanceWithThrow = async senderAddress => {
   return balance.balance;
 };
 
-export const getCandyBalanceWithThrow = async token => {
+export const getCandyBalanceWithThrow = async (token) => {
   const candyToken = await getCandyToken(token);
 
   if (candyToken.status === FAILURE) {
@@ -168,7 +193,7 @@ export const getCandyBalanceWithThrow = async token => {
   return candyToken.balance;
 };
 
-export const getCsmBalanceWithThrow = async token => {
+export const getCsmBalanceWithThrow = async (token) => {
   const csmToken = await getCSMToken(token);
 
   if (csmToken.status === FAILURE) {
@@ -200,7 +225,7 @@ export const isValidTokenAmount = async (
   famountInBN,
   feeInBN,
   token,
-  senderAddress,
+  senderAddress
 ) => {
   if (token.tokenSymbol === ChainApi.getTokenSymbol()) {
     return isValidTxnAmount(balanceInBN, totalAmount, network);
@@ -218,20 +243,20 @@ export const getFeesByPaymentInfo = async (
   senderAddress,
   toAddress,
   amountInBn,
-  tokenSelected,
+  tokenSelected
 ) => {
   switch (txnType) {
     case Transaction.TRANSFER_COINS: {
       if (
-        tokenSelected.tokenSymbol === ChainApi.getTokenSymbol()
-        || tokenSelected.tokenSymbol === 'Candy'
-        || tokenSelected.tokenSymbol === 'CSM'
+        tokenSelected.tokenSymbol === ChainApi.getTokenSymbol() ||
+        tokenSelected.tokenSymbol === 'Candy' ||
+        tokenSelected.tokenSymbol === 'CSM'
       ) {
         const fees = FeeService.getTrasactionFees(
           senderAddress,
           toAddress,
           amountInBn,
-          tokenSelected,
+          tokenSelected
         );
         return fees;
       }
@@ -242,10 +267,14 @@ export const getFeesByPaymentInfo = async (
   }
 };
 
-const validateAmount = async (senderAddress, network, transaction, seedWords, keypairType) => {
-  const {
-    to, account, amount, unit, txnType, tokenSelected
-  } = transaction;
+const validateAmount = async (
+  senderAddress,
+  network,
+  transaction,
+  seedWords,
+  keypairType
+) => {
+  const { to, account, amount, unit, txnType, tokenSelected } = transaction;
   // const fAmount = convertUnit(amount.toString(), unit.text, getBaseUnit().text); // converting in femto
   const fAmount = convertShowToBalance(amount.toString(), tokenSelected);
   // TODO MM: Take 0 Signature size to show 10 milli fees like polkadot
@@ -256,7 +285,7 @@ const validateAmount = async (senderAddress, network, transaction, seedWords, ke
     senderAddress,
     to,
     new BN(fAmount),
-    tokenSelected,
+    tokenSelected
   ); // in femto
   const balance = await getTokenBalance(senderAddress, tokenSelected); // in femto
   const { totalFee } = fees;
@@ -269,7 +298,7 @@ const validateAmount = async (senderAddress, network, transaction, seedWords, ke
     new BN(fAmount),
     new BN(totalFee),
     tokenSelected,
-    senderAddress,
+    senderAddress
   );
   if (isValidAmount) {
     return {
@@ -292,7 +321,7 @@ export const confirmTransaction = async (
   network,
   transaction,
   seedWords,
-  keypairType,
+  keypairType
 ) => {
   // validate transaction object
   let newTransaction;
@@ -308,7 +337,7 @@ export const confirmTransaction = async (
       network,
       transaction,
       seedWords,
-      keypairType,
+      keypairType
     );
     const { isValidAmount } = newTransaction;
     if (isValidAmount) {
@@ -331,19 +360,23 @@ export const getTransactionFees = async (
   network,
   transaction,
   seedWords,
-  keypairType,
+  keypairType
 ) => {
   const vTransaction = validateTxnObject(transaction);
   if (vTransaction !== undefined) return vTransaction;
 
   let fees;
   const txnError = getTxnError();
-  const {
-    to, account, amount, unit, txnType, tokenSelected
-  } = transaction;
+  const { to, account, amount, unit, txnType, tokenSelected } = transaction;
   const fAmount = convertShowToBalance(amount.toString(), tokenSelected);
   if (isValidAddress(transaction.to)) {
-    fees = await getFeesByPaymentInfo(txnType, senderAddress, to, new BN(fAmount), tokenSelected);
+    fees = await getFeesByPaymentInfo(
+      txnType,
+      senderAddress,
+      to,
+      new BN(fAmount),
+      tokenSelected
+    );
   } else {
     txnError.isError = true;
     txnError.isToAddressError = true;

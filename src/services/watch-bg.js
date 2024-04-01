@@ -1,4 +1,4 @@
-import { runtime } from 'extensionizer';
+import { runtime } from 'webextension-polyfill';
 import {
   SENDER_CRUST_BG,
   SYNC_NETWORK_CONNECTED,

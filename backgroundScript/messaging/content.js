@@ -1,4 +1,5 @@
-import extension from 'extensionizer';
+import extension from 'webextension-polyfill';
+
 import * as ResponseService from '../services/response-service';
 import * as MessageTypes from '../../lib/constants/message-types';
 import * as ExtensionApi from '../../lib/services/extension/extension';
@@ -19,7 +20,11 @@ extension.runtime.onMessage.addListener((request, sender, sendResponse) => {
         // console.info('ContentMsg:', request.type, request);
         switch (request.type) {
           case MessageTypes.BG_DAPP_TXN_VALIDATE:
-            ResponseService.handleDAppValidateTransaction(request, sender, sendResponse);
+            ResponseService.handleDAppValidateTransaction(
+              request,
+              sender,
+              sendResponse
+            );
             break;
           case MessageTypes.BG_DAPP_AUTHORIZE:
             ResponseService.handleAuthorizeDApp(request, sender, sendResponse);

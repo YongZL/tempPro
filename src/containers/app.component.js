@@ -42,10 +42,10 @@ class App extends Component {
   componentDidMount() {
     console.log('dasdasdasasddas', this.props);
     this.props.updateBackupPage(this.props.page);
-    // this.props.fetchAndUpdateAppManifest();
-    // this.props.fetchAndUpdateLanguage(this.props.i18n);
+    this.props.fetchAndUpdateAppManifest();
+    this.props.fetchAndUpdateLanguage(this.props.i18n);
     this.props.updateAppLoading(true);
-    this.props.onBoard();
+    // this.props.onBoard();
   }
 
   static getDerivedStateFromProps(prevProps, nextState) {
@@ -241,6 +241,7 @@ class App extends Component {
         showUserId,
       },
     } = this;
+    console.log('thisthis', this);
 
     return (
       <CrustApp

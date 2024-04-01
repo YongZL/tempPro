@@ -1,15 +1,15 @@
-import extension from 'extensionizer';
+import extension from 'webextension-polyfill';
 
-extension.runtime.getPlatformInfo(info => {
+extension.runtime.getPlatformInfo().then((info) => {
   if (info.os === 'mac') {
     const fontFaceSheet = new CSSStyleSheet();
     fontFaceSheet.insertRule(`
       @keyframes redraw {
         0% {
-        opacity: 1;
+          opacity: 1;
         }
         100% {
-        opacity: .99;
+          opacity: .99;
         }
       }
     `);
@@ -18,6 +18,9 @@ extension.runtime.getPlatformInfo(info => {
         animation: redraw 1s linear infinite;
       }
     `);
-    document.adoptedStyleSheets = [...document.adoptedStyleSheets, fontFaceSheet];
+    document.adoptedStyleSheets = [
+      ...document.adoptedStyleSheets,
+      fontFaceSheet,
+    ];
   }
 });

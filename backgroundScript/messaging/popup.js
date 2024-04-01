@@ -5,7 +5,8 @@ import * as dapp from '../apis/dapp';
 import * as DAppService from '../services/dapp-service';
 import * as ResponseType from '../../lib/constants/response-types';
 
-const extension = require('extensionizer');
+const extension = require('webextension-polyfill');
+console.log('进入了这大师大师啊？');
 
 extension.runtime.onMessage.addListener((request, sender, sendResponse) => {
   // Extension to Content Script
@@ -14,6 +15,7 @@ extension.runtime.onMessage.addListener((request, sender, sendResponse) => {
   const windowURL = extension.extension.getURL('window.html');
   const senderId = sender.id;
   const extensionId = extension.runtime.id;
+
   if (senderId === extensionId) {
     if (senderURL === popupURL || senderURL === windowURL) {
       try {
@@ -187,7 +189,11 @@ extension.runtime.onMessage.addListener((request, sender, sendResponse) => {
             break;
           }
           case MessageTypes.BG_DAPP_UPDATE_WHITELIST: {
-            ResponseService.updateWhiteListedDApps(request, sender, sendResponse);
+            ResponseService.updateWhiteListedDApps(
+              request,
+              sender,
+              sendResponse
+            );
             break;
           }
           case MessageTypes.BG_DAPP_GET_SIGN_MESSAGE: {
@@ -195,7 +201,11 @@ extension.runtime.onMessage.addListener((request, sender, sendResponse) => {
             break;
           }
           case MessageTypes.BG_DAPP_TXN_SUBMIT: {
-            ResponseService.submitDappTransaction(request, sender, sendResponse);
+            ResponseService.submitDappTransaction(
+              request,
+              sender,
+              sendResponse
+            );
             break;
           }
           case MessageTypes.BG_DAPP_ALLOW_METADATA_PROVIDE:
@@ -240,14 +250,14 @@ extension.runtime.onMessage.addListener((request, sender, sendResponse) => {
   return true;
 });
 
-extension.windows.onRemoved.addListener(async windowId => {
+extension.windows.onRemoved.addListener(async (windowId) => {
   const metadata = await dapp.getMetaData();
   if (
-    metadata
-    && metadata.window
-    && metadata.window.id === windowId
-    && metadata.requests
-    && metadata.requests.length
+    metadata &&
+    metadata.window &&
+    metadata.window.id === windowId &&
+    metadata.requests &&
+    metadata.requests.length
   ) {
     const request = metadata.requests[0];
     await DAppService.closeRequestAndReplyDApp(request.id, {

@@ -36,12 +36,19 @@ export const fetchManifest = async () => {
 };
 
 export const fetchLanguage = async () => {
-  const { message, status, result } = await sendMessage({
-    type: MessageTypes.BG_APP_GET_LANGUAGE,
-  });
-  console.log('messagemessagemessage', status, result);
-  throwIfNoSuccess({ message, status });
-  return { result };
+  try {
+    console.log('进入了fetchLanguage222');
+
+    const { message, status, result } = await sendMessage({
+      type: MessageTypes.BG_APP_GET_LANGUAGE,
+    });
+
+    console.log('messagemessagemessage', status, result);
+    throwIfNoSuccess({ message, status });
+    return { result };
+  } catch (e) {
+    console.log('eeeeeadasdas', e);
+  }
 };
 
 export const setLangeuage = async (language) => {
